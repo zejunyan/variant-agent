@@ -193,6 +193,15 @@ def prepare_pipeline_run_data(
         RESULTS_ROOT / run_name
     ).resolve()
 
+    work_directory = (
+        PROJECT_ROOT
+        / "work"
+        / "agent_runs"
+        / run_name
+    ).resolve()
+
+    trace_path = output_directory / "nextflow_trace.tsv"
+
     if not _is_within(output_directory, RESULTS_ROOT.resolve()):
         report["errors"].append(
             "Output directory is outside the approved results root."
@@ -209,11 +218,15 @@ def prepare_pipeline_run_data(
     command = [
         "nextflow",
         "run",
+        "-work-dir",
+        str(work_directory),
         str(ALLOWED_WORKFLOWS[workflow]),
         "-profile",
         profile,
         "-name",
         run_name,
+        "-with-trace",
+        str(trace_path),
         "--input",
         str(samplesheet_path),
         "--reference",
@@ -233,6 +246,8 @@ def prepare_pipeline_run_data(
         "run_name": run_name,
         "samplesheet": str(samplesheet_path),
         "sample_count": sample_count,
+        "work_directory": str(work_directory),
+        "trace_path": str(trace_path),
         "output_directory": str(output_directory),
         "command": command,
     }
@@ -324,6 +339,8 @@ def execute_pipeline_run_data(
         "samplesheet": plan["samplesheet"],
         "sample_count": plan["sample_count"],
         "output_directory": plan["output_directory"],
+        "work_directory": plan["work_directory"],
+        "trace_path": plan["trace_path"],
         "command": plan["command"],
         "started_at": _utc_now(),
         "completed_at": None,
