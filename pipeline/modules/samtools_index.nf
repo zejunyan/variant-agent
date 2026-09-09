@@ -13,14 +13,13 @@ process SAMTOOLS_INDEX {
     output:
     tuple val(sample_id),
           path(bam),
-          path("${sample_id}.sorted.bam.bai"),
+          path("${bam}.bai"),
           emit: bam_bai
 
     script:
     """
     samtools index \
         -@ ${task.cpus} \
-        ${bam} \
-        ${sample_id}.sorted.bam.bai
+        ${bam}
     """
 }

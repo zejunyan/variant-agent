@@ -32,3 +32,13 @@ secrets/
 
 # macOS
 .DS_Store
+
+# Generated human test dataset
+test_data/human_grch38/
+test_data/reference/
+
+# Reference genome files
+*.fa
+*.fasta
+*.fa.fai
+*.dict

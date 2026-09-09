@@ -7,6 +7,8 @@ include { SAMTOOLS_SORT } from './modules/samtools_sort'
 include { SAMTOOLS_INDEX } from './modules/samtools_index'
 include { GATK_MARKDUPLICATES }       from './modules/gatk_markduplicates'
 include { SAMTOOLS_ALIGNMENT_METRICS } from './modules/samtools_alignment_metrics'
+include { GATK_HAPLOTYPECALLER } from './modules/gatk_haplotypecaller'
+include { GATK_GENOTYPEGVCFS } from './modules/gatk_genotypegvcfs'
 
 params.input = null
 params.reference = null
@@ -69,4 +71,12 @@ workflow {
 
     SAMTOOLS_ALIGNMENT_METRICS(
         SAMTOOLS_INDEX.out.bam_bai)
+
+    GATK_HAPLOTYPECALLER(
+        SAMTOOLS_INDEX.out.bam_bai,
+        reference_ch)
+
+    GATK_GENOTYPEGVCFS(
+        GATK_HAPLOTYPECALLER.out.gvcf,
+        reference_ch)
 }
