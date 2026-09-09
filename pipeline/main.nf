@@ -5,6 +5,8 @@ include { FASTP }  from './modules/fastp'
 include { BWAMEM2_ALIGN } from './modules/bwamem2_align'
 include { SAMTOOLS_SORT } from './modules/samtools_sort'
 include { SAMTOOLS_INDEX } from './modules/samtools_index'
+include { GATK_MARKDUPLICATES }       from './modules/gatk_markduplicates'
+include { SAMTOOLS_ALIGNMENT_METRICS } from './modules/samtools_alignment_metrics'
 
 params.input = null
 params.reference = null
@@ -59,6 +61,12 @@ workflow {
     SAMTOOLS_SORT(
         BWAMEM2_ALIGN.out.sam)
 
-    SAMTOOLS_INDEX(
+    GATK_MARKDUPLICATES(
         SAMTOOLS_SORT.out.bam)
+
+    SAMTOOLS_INDEX(
+        GATK_MARKDUPLICATES.out.bam)
+
+    SAMTOOLS_ALIGNMENT_METRICS(
+        SAMTOOLS_INDEX.out.bam_bai)
 }
