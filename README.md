@@ -1,5 +1,9 @@
 # Variant Agent
 
+<p align="center">
+  <img src="assets/variant-agent-logo.png" alt="Variant Agent logo" width="360">
+</p>
+
 Variant Agent is a learning project that combines a deterministic germline
 variant-calling pipeline with tested AI agents.
 
