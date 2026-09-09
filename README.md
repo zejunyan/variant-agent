@@ -25,7 +25,37 @@ The project currently includes:
 - Read-only monitoring and recovery recommendations
 - An initial two-agent system with a manager and one specialist
 
-## Architecture
+## How it works
+
+The project provides three ways to interact with the analysis:
+
+```mermaid
+flowchart TD
+    U([User]) --> Q["Ask a project or QC question"]
+    U --> P["Prepare variant calling"]
+    U --> M["Inspect an existing run"]
+
+    Q --> Manager["Manager agent"]
+    Manager --> Specialist["QC and knowledge specialist"]
+    Specialist --> Answer["Answer supported by documentation and results"]
+
+    P --> Planner["Planning agent validates the request"]
+    Planner --> Approval{"Human approval"}
+    Approval -->|Approved| Pipeline["Nextflow runs variant calling"]
+    Pipeline --> Results["Variants and QC reports"]
+
+    M --> Monitor["Monitoring agent reads logs and results"]
+    Monitor --> Summary["Status, QC summary and recovery guidance"]
+```
+
+The manager currently delegates to one QC and knowledge specialist.
+Planning and monitoring are separate entry points. Execution waits for human
+approval; monitoring provides recovery recommendations without running them.
+
+<details>
+<summary>Detailed architecture</summary>
+
+The diagram below shows the individual tools and scientific workflow stages.
 
 ```mermaid
 flowchart TD
@@ -101,8 +131,7 @@ flowchart TD
     MONITOR_AGENT -->|"Status, QC and guidance"| USER
 ```
 
-The manager currently delegates only to the QC and knowledge specialist.
-Execution planning and monitoring remain separate controlled agents.
+</details>
 
 ## Scientific workflow
 
