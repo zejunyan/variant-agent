@@ -1,0 +1,6 @@
+smolagents[toolkit]
+pytest
+pandas
+pydantic
+gradio
+sentence-transformers

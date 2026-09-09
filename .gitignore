@@ -42,3 +42,5 @@ test_data/reference/
 *.fasta
 *.fa.fai
 *.dict
+
+knowledge_base/index/
