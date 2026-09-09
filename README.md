@@ -391,6 +391,17 @@ SNP false positive or false negative.
 The truth set contains no indels. Consequently, zero-count INDEL rows do not
 evaluate INDEL performance.
 
+## Example agent-generated plot
+
+The QC specialist generated this figure from the synthetic test run's
+raw and filtered concordance results.
+
+![Raw and filtered SNP and INDEL concordance](assets/demo/concordance.png)
+
+SNP precision and recall were 1.0 in this small synthetic test.
+INDEL metrics are undefined because their denominators are zero;
+this dataset does not establish INDEL performance.
+
 ## Deterministic agent tools
 
 The project includes tools for:
