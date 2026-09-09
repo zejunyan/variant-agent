@@ -3,6 +3,8 @@ nextflow.enable.dsl = 2
 include { FASTQC } from './modules/fastqc'
 include { FASTP }  from './modules/fastp'
 include { BWAMEM2_ALIGN } from './modules/bwamem2_align'
+include { SAMTOOLS_SORT } from './modules/samtools_sort'
+include { SAMTOOLS_INDEX } from './modules/samtools_index'
 
 params.input = null
 params.reference = null
@@ -53,4 +55,10 @@ workflow {
     BWAMEM2_ALIGN(
         FASTP.out.reads,
         reference_ch)
+    
+    SAMTOOLS_SORT(
+        BWAMEM2_ALIGN.out.sam)
+
+    SAMTOOLS_INDEX(
+        SAMTOOLS_SORT.out.bam)
 }
