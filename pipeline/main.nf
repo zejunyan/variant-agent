@@ -2,13 +2,19 @@ nextflow.enable.dsl = 2
 
 include { FASTQC } from './modules/fastqc'
 include { FASTP }  from './modules/fastp'
+include { BWAMEM2_ALIGN } from './modules/bwamem2_align'
 
 params.input = null
+params.reference = null
 params.outdir = 'results'
 
 workflow {
     if (!params.input) {
         error("Please provide a samplesheet using --input")
+    }
+
+    if (!params.reference) {
+    error("Please provide a reference FASTA using --reference")
     }
 
     samples_ch = Channel
@@ -34,9 +40,17 @@ workflow {
      * Adapter and quality trimming
      */
     FASTP(samples_ch)
-
+    
     /*
      * Later:
      * ALIGN(FASTP.out.reads)
      */
+
+    reference_ch = Channel.fromPath(
+        params.reference,
+        checkIfExists: true)
+
+    BWAMEM2_ALIGN(
+        FASTP.out.reads,
+        reference_ch)
 }
