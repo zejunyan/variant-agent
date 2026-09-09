@@ -1,0 +1,34 @@
+# Python virtual environment
+.venv/
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Nextflow cache and logs
+.nextflow/
+.nextflow.log*
+work/
+
+# Pipeline outputs
+results/
+
+# Downloaded sequencing data
+test_data/fastq/
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.bam
+*.bai
+*.cram
+*.crai
+
+# Secrets
+.env
+*.token
+secrets/
+
+# macOS
+.DS_Store
