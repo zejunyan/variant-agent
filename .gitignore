@@ -44,3 +44,7 @@ test_data/reference/
 *.dict
 
 knowledge_base/index/
+
+# Controlled pipeline execution
+execution_logs/
+results/agent_runs/
