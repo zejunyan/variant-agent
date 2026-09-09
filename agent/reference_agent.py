@@ -6,7 +6,7 @@ from pathlib import Path
 from smolagents import InferenceClientModel, ToolCallingAgent
 from smolagents.utils import AgentGenerationError
 
-from agent_tools.validate_samplesheet import validate_samplesheet
+from agent_tools.inspect_reference import inspect_reference
 
 
 def main():
@@ -15,31 +15,32 @@ def main():
 
     if len(sys.argv) != 2:
         raise SystemExit(
-            "Usage: python agent/samplesheet_agent.py "
-            "<samplesheet.csv>"
+            "Usage: python -m agent.reference_agent "
+            "<reference.fa>"
         )
 
-    samplesheet_path = Path(sys.argv[1]).resolve()
+    reference_path = Path(sys.argv[1]).resolve()
 
     model = InferenceClientModel(
         model_id="openai/gpt-oss-20b",
-        provider="together",
+        provider="deepinfra",
         token=os.environ["HF_TOKEN"],
         temperature=0.0,
         max_tokens=1024,
     )
 
     agent = ToolCallingAgent(
-        tools=[validate_samplesheet],
+        tools=[inspect_reference],
         model=model,
         max_steps=5,
         verbosity_level=2,
     )
 
     task = (
-        "Use the validate_samplesheet tool to validate this "
-        f"samplesheet: {samplesheet_path}. "
-        "Report whether it is valid. Do not guess file contents."
+        "Use the inspect_reference tool to inspect this reference: "
+        f"{reference_path}. Report whether it is valid, list its "
+        "contigs, and explain whether it matches the approved GRCh38 "
+        "chromosome 20 test reference. Do not guess."
     )
 
     maximum_attempts = 3
