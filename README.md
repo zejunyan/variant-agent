@@ -23,7 +23,7 @@ The project currently includes:
 - A local retrieval-augmented generation system
 - Controlled pipeline planning and execution
 - Read-only monitoring and recovery recommendations
-- An initial two-agent system with a manager and one specialist
+- A three-agent system with a manager, QC specialist, and knowledge specialist
 
 ## How it works
 
@@ -37,6 +37,8 @@ flowchart TD
 
     Q --> Manager["Manager agent"]
     Manager --> Specialist["QC and knowledge specialist"]
+    Manager --> Knowledge["Knowledge specialist"]
+    Knowledge --> Answer
     Specialist --> Answer["Answer supported by documentation and results"]
 
     P --> Planner["Planning agent validates the request"]
@@ -48,7 +50,8 @@ flowchart TD
     Monitor --> Summary["Status, QC summary and recovery guidance"]
 ```
 
-The manager currently delegates to one QC and knowledge specialist.
+The manager delegates documentation questions to the knowledge specialist and
+result inspection or plotting to the QC specialist. Mixed requests can use both.
 Planning and monitoring are separate entry points. Execution waits for human
 approval; monitoring provides recovery recommendations without running them.
 
@@ -68,7 +71,12 @@ flowchart TD
         QCRESULTS["MultiQC and concordance inspection"]
         VCF["VCF header inspection"]
 
-        MANAGER -->|"QC or documentation"| QC
+        KNOWLEDGE["Knowledge specialist"]
+        MANAGER -->|"Documentation"| KNOWLEDGE
+        KNOWLEDGE --> RAG
+        RAG --> KNOWLEDGE
+        KNOWLEDGE -->|"Documented evidence with sources"| MANAGER
+        MANAGER -->|"QC results or plots"| QC
         QC --> RAG
         QC --> QCRESULTS
         QC --> VCF
@@ -551,24 +559,29 @@ The current multi-agent system contains:
 
 ```text
 variant_agent_manager
-  `-- qc_knowledge_specialist
-      |-- search_knowledge_base
-      |-- summarize_multiqc
-      |-- inspect_vcf_header
-      `-- get_qc_summary
+  |-- qc_knowledge_specialist
+  |   |-- search_knowledge_base
+  |   |-- summarize_multiqc
+  |   |-- inspect_vcf_header
+  |   |-- get_qc_summary
+  |   `-- plot_concordance
+  `-- knowledge_specialist
+      `-- search_knowledge_base
 ```
 
 The manager has no direct bioinformatics or execution tools. It classifies a
-supported request and delegates it to the specialist.
+supported request and delegates it to the appropriate specialist. The QC
+specialist retains documentation search for context when interpreting results.
+The knowledge specialist cannot inspect run files or launch the pipeline.
 
-Run the specialist directly:
+Run the knowledge specialist directly from the repository root:
 
 ```bash
-python -m agent.qc_knowledge_specialist \
+python -m agent.knowledge_specialist \
   "Which reference files are required by this project?"
 ```
 
-Run the two-agent system:
+Run the three-agent system:
 
 ```bash
 python -m agent.multi_agent_manager \

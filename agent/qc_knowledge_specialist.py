@@ -18,6 +18,7 @@ from agent_tools.search_knowledge_base import (
     search_knowledge_base,
 )
 from agent_tools.summarize_multiqc import summarize_multiqc
+from agent_tools.plot_concordance import plot_concordance
 
 
 MODEL_ID = "Qwen/Qwen3.5-9B"
@@ -29,6 +30,7 @@ QC_SPECIALIST_TOOLS = (
     summarize_multiqc,
     inspect_vcf_header,
     get_qc_summary,
+    plot_concordance,
 )
 
 

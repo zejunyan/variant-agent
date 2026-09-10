@@ -7,10 +7,11 @@ from agent.role_contracts import (
 
 
 def test_role_names_are_unique():
-    assert len(ROLE_CONTRACTS) == 2
+    assert len(ROLE_CONTRACTS) == 3
     assert set(ROLE_CONTRACTS) == {
         "variant_agent_manager",
         "qc_knowledge_specialist",
+        "knowledge_specialist",
     }
 
 
@@ -18,9 +19,10 @@ def test_manager_has_no_direct_tools():
     assert MANAGER.allowed_tools == ()
 
 
-def test_manager_can_delegate_only_to_qc_specialist():
+def test_manager_can_delegate_only_to_registered_specialists():
     assert MANAGER.allowed_delegates == (
         "qc_knowledge_specialist",
+        "knowledge_specialist",
     )
 
 
@@ -34,6 +36,7 @@ def test_qc_specialist_has_expected_read_only_tools():
         "summarize_multiqc",
         "inspect_vcf_header",
         "get_qc_summary",
+        "plot_concordance",
     }
 
 

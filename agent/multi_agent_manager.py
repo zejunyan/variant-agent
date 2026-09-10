@@ -12,6 +12,7 @@ from smolagents.utils import AgentGenerationError
 from agent.qc_knowledge_specialist import (
     create_qc_knowledge_specialist,
 )
+from agent.knowledge_specialist import create_knowledge_specialist
 from agent.role_contracts import (
     MANAGER,
     QC_KNOWLEDGE_SPECIALIST,
@@ -38,9 +39,14 @@ Delegation procedure:
    - QC or MultiQC results
    - Raw or filtered concordance
    - VCF header inspection
+   - Creating plots from existing concordance results
 
-2. For any supported request, delegate to
-   qc_knowledge_specialist.
+2. For documentation, input requirements, reference resources, or documented
+   troubleshooting, delegate to knowledge_specialist.
+   For actual QC, MultiQC, VCF, concordance results, or plots,
+   delegate to qc_knowledge_specialist.
+   For mixed requests, consult both specialists and distinguish documented
+   guidance from observed run evidence.
 
 3. Give the specialist the complete user request, including any
    run name, sample name, VCF path, or MultiQC path supplied by
@@ -77,9 +83,11 @@ def create_multi_agent_system(
     specialist = create_qc_knowledge_specialist(
         model=model
     )
+    knowledge_specialist = create_knowledge_specialist(model=model)
 
     actual_delegates = {
         specialist.name,
+        knowledge_specialist.name,
     }
 
     contracted_delegates = set(
@@ -102,7 +110,7 @@ def create_multi_agent_system(
     manager = ToolCallingAgent(
         tools=[],
         model=model,
-        managed_agents=[specialist],
+        managed_agents=[specialist, knowledge_specialist],
         instructions=MANAGER.build_instructions(),
         name=MANAGER.name,
         description=MANAGER.description,

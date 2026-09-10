@@ -23,13 +23,14 @@ def test_manager_has_expected_identity():
     assert manager.description == MANAGER.description
 
 
-def test_manager_has_one_managed_agent():
+def test_manager_has_two_managed_agents():
     manager = create_multi_agent_system(
         model=DummyModel()
     )
 
     assert set(manager.managed_agents) == {
         "qc_knowledge_specialist",
+        "knowledge_specialist",
     }
 
 
@@ -134,3 +135,14 @@ def test_manager_must_preserve_evidence():
     assert "Use only the evidence returned" in task
     assert "Preserve source filenames" in task
     assert "insufficient evidence" in task
+
+
+def test_documentation_routing_reaches_manager_contract():
+    manager = create_multi_agent_system(model=DummyModel())
+    assert "knowledge_specialist" in manager.instructions
+    assert "consult both specialists" in manager.instructions
+    assert "delegate to knowledge_specialist" in " ".join(
+        build_manager_task("Which reference is required?").split()
+    )
+    knowledge = manager.managed_agents["knowledge_specialist"]
+    assert set(knowledge.tools) == {"search_knowledge_base", "final_answer"}
