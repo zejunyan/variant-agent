@@ -23,7 +23,7 @@ The project currently includes:
 - A local retrieval-augmented generation system
 - Controlled pipeline planning and execution
 - Read-only monitoring and recovery recommendations
-- A three-agent system with a manager, QC specialist, and knowledge specialist
+- A five-agent system with knowledge, QC, execution, and results specialists
 
 ## How it works
 
@@ -38,7 +38,11 @@ flowchart TD
     Q --> Manager["Manager agent"]
     Manager --> Specialist["QC and knowledge specialist"]
     Manager --> Knowledge["Knowledge specialist"]
+    Manager --> Execution["Execution specialist"]
+    Manager --> ResultsAgent["Results specialist"]
     Knowledge --> Answer
+    Execution --> Pipeline
+    ResultsAgent --> Answer
     Specialist --> Answer["Answer supported by documentation and results"]
 
     P --> Planner["Planning agent validates the request"]
@@ -50,10 +54,10 @@ flowchart TD
     Monitor --> Summary["Status, QC summary and recovery guidance"]
 ```
 
-The manager delegates documentation questions to the knowledge specialist and
-result inspection or plotting to the QC specialist. Mixed requests can use both.
-Planning and monitoring are separate entry points. Execution waits for human
-approval; monitoring provides recovery recommendations without running them.
+The manager delegates documentation to the knowledge specialist, focused VCF
+inspection to the QC specialist, controlled planning and approved launches to
+the execution specialist, and run monitoring, results, and plots to the results
+specialist. Execution requires an exact human approval value.
 
 <details>
 <summary>Detailed architecture</summary>
@@ -72,11 +76,15 @@ flowchart TD
         VCF["VCF header inspection"]
 
         KNOWLEDGE["Knowledge specialist"]
+        EXECUTION["Execution specialist"]
+        RESULTSAGENT["Results specialist"]
         MANAGER -->|"Documentation"| KNOWLEDGE
         KNOWLEDGE --> RAG
         RAG --> KNOWLEDGE
         KNOWLEDGE -->|"Documented evidence with sources"| MANAGER
-        MANAGER -->|"QC results or plots"| QC
+        MANAGER -->|"Focused VCF or QC question"| QC
+        MANAGER -->|"Plan or approved launch"| EXECUTION
+        MANAGER -->|"Status, failures, resources, results, plots"| RESULTSAGENT
         QC --> RAG
         QC --> QCRESULTS
         QC --> VCF
@@ -565,14 +573,27 @@ variant_agent_manager
   |   |-- inspect_vcf_header
   |   |-- get_qc_summary
   |   `-- plot_concordance
-  `-- knowledge_specialist
-      `-- search_knowledge_base
+  |-- knowledge_specialist
+  |   `-- search_knowledge_base
+  |-- execution_specialist
+  |   |-- prepare_pipeline_run
+  |   `-- execute_pipeline_run
+  `-- results_specialist
+      |-- get_pipeline_status
+      |-- list_failed_processes
+      |-- read_process_error
+      |-- get_resource_usage
+      |-- get_qc_summary
+      |-- summarize_multiqc
+      |-- plot_concordance
+      `-- recommend_recovery
 ```
 
 The manager has no direct bioinformatics or execution tools. It classifies a
-supported request and delegates it to the appropriate specialist. The QC
-specialist retains documentation search for context when interpreting results.
-The knowledge specialist cannot inspect run files or launch the pipeline.
+supported request and delegates it to the appropriate specialist. The manager
+cannot call domain tools directly. The execution specialist requires a valid
+plan followed by the exact human-provided `APPROVE-<plan-id>` value. The results
+specialist is read-only except for creating derived plots.
 
 Run the knowledge specialist directly from the repository root:
 
@@ -581,15 +602,23 @@ python -m agent.knowledge_specialist \
   "Which reference files are required by this project?"
 ```
 
-Run the three-agent system:
+Run the five-agent system:
 
 ```bash
 python -m agent.multi_agent_manager \
   "Which reference files are required by this project?"
 ```
 
-The next multi-agent development steps will add monitoring and execution
-planning as separately permissioned specialists.
+Prepare a controlled run through the manager:
+
+```bash
+python -m agent.multi_agent_manager \
+  "Prepare a germline_test run named demo-001 using test_data/human_grch38/samplesheet.csv, the test profile, and GRCh38"
+```
+
+The execution specialist returns a plan ID. Review it, then send a second
+request containing the exact approval value it reports. Ask the manager for
+run status or results using the same run name and expected sample.
 
 ## Tests
 

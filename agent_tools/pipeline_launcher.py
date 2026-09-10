@@ -446,6 +446,44 @@ def prepare_pipeline_run(
     return json.dumps(report, indent=2)
 
 
+@tool
+def execute_pipeline_run(
+    samplesheet: str,
+    workflow: str,
+    profile: str,
+    reference_build: str,
+    run_name: str,
+    approval: str,
+) -> str:
+    """Execute a validated pipeline run after exact human approval.
+
+    Call prepare_pipeline_run first. Execution proceeds only when approval
+    exactly matches APPROVE-<plan-id> for the same validated inputs.
+
+    Args:
+        samplesheet: Path to the paired-end CSV samplesheet.
+        workflow: Approved workflow. Use germline_test.
+        profile: Approved execution profile. Use test.
+        reference_build: Approved reference. Use GRCh38.
+        run_name: The same unique run name used to prepare the plan.
+        approval: Exact human-provided APPROVE-<plan-id> value.
+
+    Returns:
+        JSON containing execution status, exit code, output directory,
+        audit path, errors, and warnings.
+    """
+
+    report = execute_pipeline_run_data(
+        samplesheet=samplesheet,
+        workflow=workflow,
+        profile=profile,
+        reference_build=reference_build,
+        run_name=run_name,
+        approval=approval,
+    )
+    return json.dumps(report, indent=2)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
